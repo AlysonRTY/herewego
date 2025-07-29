@@ -1,14 +1,13 @@
-import { Button } from "@/components/ui/button";
+import HeroSection from "@/components/HeroSection";
+import FeaturedSection from "@/components/FeaturedSection";
+import Footer from "@/components/Footer";
 
-function Homepage() {
+export default function Homepage() {
   return (
-    <>
-      <h1>Homepage Hi guys i like react</h1>
-      <div className="flex min-h-svh flex-col items-center justify-center">
-        <Button>Click me</Button>
-      </div>
-    </>
+    <div className="min-h-screen bg-white dark:bg-slate-900">
+      <HeroSection />
+      <FeaturedSection />
+      <Footer />
+    </div>
   );
 }
-
-export default Homepage;

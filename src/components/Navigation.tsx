@@ -5,6 +5,7 @@ export default function Navigation() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/aboutMe", label: "About" },
+    { href: "/duckFacts", label: "Duck Facts" },
   ];
 
   return (

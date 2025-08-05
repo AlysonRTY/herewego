@@ -22,7 +22,7 @@ export default function DuckFacts() {
 
         <Separator className="my-8" />
 
-        <div className="mt-12 text-center">
+        <div className="mt-12 space-y-8">
           <Card className="max-w-2xl mx-auto bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
             <CardHeader>
               <CardTitle className="text-2xl text-green-800">
@@ -37,6 +37,24 @@ export default function DuckFacts() {
                 characteristics and behaviors. From the tiny Green-winged Teal
                 to the majestic Mallard, ducks continue to fascinate scientists
                 and nature lovers alike!
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="max-w-2xl mx-auto bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
+            <CardHeader>
+              <CardTitle className="text-2xl text-orange-800">
+                Amazing Duck Superpowers!
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">
+                Ducks have incredible waterproof feathers thanks to a special
+                oil gland near their tail called the uropygial gland. They
+                spread this oil over their feathers to keep them dry and
+                buoyant. Plus, ducks can sleep with one eye open and half their
+                brain awake - a skill called unihemispheric slow-wave sleep -
+                allowing them to stay alert for predators while resting!
               </p>
             </CardContent>
           </Card>

@@ -18,11 +18,11 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0">
             <div className="flex items-center space-x-2 mb-2">
-              <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center">
+              {/* <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center">
                 <span className="text-sm font-bold text-white dark:text-slate-900">
                   M
                 </span>
-              </div>
+              </div> */}
               <span className="font-bold text-xl text-slate-900 dark:text-white">
                 Max
               </span>

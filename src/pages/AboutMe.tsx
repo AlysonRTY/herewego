@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, Download, Mail, Github, Linkedin } from "lucide-react";
+import Footer from "@/components/Footer";
 
 function AboutMe() {
   const skills = [
@@ -189,6 +190,7 @@ function AboutMe() {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 }

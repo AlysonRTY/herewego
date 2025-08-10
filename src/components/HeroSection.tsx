@@ -8,11 +8,6 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto px-4 text-center relative z-10">
-        {/* Badge */}
-        {/* <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm">
-         Available for new opportunities
-        </Badge> */}
-
         {/* Main heading */}
         <h1 className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-slate-100 mb-6 leading-tight">
           Hi, I'm{" "}

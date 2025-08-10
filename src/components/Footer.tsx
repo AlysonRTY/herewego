@@ -56,7 +56,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-300 dark:border-slate-700 mt-8 pt-8 text-center">
           <p className="text-sm">
-            © 2024 Max. Built with React, TypeScript, and Tailwind CSS.
+            © 2025 Max. Built with React, TypeScript, and Tailwind CSS.
           </p>
         </div>
       </div>

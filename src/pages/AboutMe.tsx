@@ -93,6 +93,37 @@ function AboutMe() {
           </CardContent>
         </Card>
 
+        {/* Personal Interests & Hobbies Section */}
+        <Card className="mb-8 border-0 bg-slate-50 dark:bg-slate-800 hover:shadow-lg transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="text-2xl text-slate-900 dark:text-slate-100">
+              Personal Interests & Hobbies
+            </CardTitle>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
+              What I enjoy when I'm not coding
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                    🦆
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                      Duck Conversations
+                    </h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      My favorite, chatting with our feathered friends
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Skills Section */}
         <Card className="mb-8 border-0 bg-slate-50 dark:bg-slate-800 hover:shadow-lg transition-all duration-300">
           <CardHeader>

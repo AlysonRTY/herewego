@@ -12,11 +12,6 @@ export default function Navigation() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          {/* <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center">
-            <span className="text-sm font-bold text-white dark:text-slate-900">
-              M
-            </span>
-          </div> */}
           <span className="font-bold text-xl">Max</span>
         </Link>
 

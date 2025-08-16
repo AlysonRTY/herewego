@@ -44,7 +44,7 @@ export default function PersonalInterests() {
                     Reading
                   </h4>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Tech books, sci-fi novels, and learning new things
+                    The Holy Bible
                   </p>
                 </div>
               </div>

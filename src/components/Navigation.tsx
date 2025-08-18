@@ -6,6 +6,7 @@ export default function Navigation() {
     { href: "/", label: "Home" },
     { href: "/aboutMe", label: "About" },
     { href: "/duckFacts", label: "Duck Facts" },
+    { href: "/skills", label: "Skills" },
   ];
 
   return (

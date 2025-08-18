@@ -103,13 +103,6 @@ export default function DuckFacts() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">{fact.content}</p>
-                {/* {selectedFact === fact.id && (
-                  <div className="mt-4 p-3 bg-white/50 rounded-lg border-l-4 border-blue-400">
-                    <p className="text-sm text-blue-700 font-medium">
-                      💡 Fun tip: Click any fact card to highlight it!
-                    </p>
-                  </div>
-                )} */}
               </CardContent>
             </Card>
           ))}

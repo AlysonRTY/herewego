@@ -66,9 +66,6 @@ export default function DuckFacts() {
             about these amazing waterfowl!
           </p>
           <div className="mt-4 flex justify-center gap-2">
-            {/* <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-              {duckFacts.length} Facts
-            </Badge> */}
             <Badge
               variant="outline"
               className="border-green-300 text-green-700"

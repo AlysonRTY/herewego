@@ -52,6 +52,16 @@ export default function DuckFacts() {
       textColor: "text-indigo-800",
       emoji: "✈️",
     },
+    {
+      id: 5,
+      title: "Dedicated Duck Parents",
+      content:
+        "Duck parents are incredibly devoted! Mother ducks will fiercely protect their ducklings, often leading them in a single-file line called a 'brood.' Some species of ducks practice 'brood parasitism,' where they lay eggs in other ducks' nests. The most amazing part? Ducklings can swim and feed themselves within hours of hatching, but they stay with their mother for protection and guidance for several weeks!",
+      color: "from-red-50 to-pink-50",
+      borderColor: "border-red-200",
+      textColor: "text-red-800",
+      emoji: "👨‍👩‍👧‍👦",
+    },
   ];
 
   return (

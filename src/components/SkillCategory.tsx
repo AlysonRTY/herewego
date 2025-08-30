@@ -1,5 +1,3 @@
-import React from "react";
-
 interface SkillCategoryProps {
   title: string;
   accentColor?: "blue" | "green" | "purple" | "rose" | "amber";

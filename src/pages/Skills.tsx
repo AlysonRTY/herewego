@@ -26,6 +26,11 @@ export default function Skills() {
                   "Tailwind CSS",
                   "Shadcn/UI",
                   "Radix UI",
+                  "Vue.js",
+                  "HTML",
+                  "CSS",
+                  "Sass",
+                  "Bootstrap",
                 ]}
               />
 

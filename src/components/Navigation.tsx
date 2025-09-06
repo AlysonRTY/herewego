@@ -7,6 +7,7 @@ export default function Navigation() {
     { href: "/aboutMe", label: "About" },
     { href: "/duckFacts", label: "Duck Facts" },
     { href: "/skills", label: "Skills" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
@@ -30,7 +31,7 @@ export default function Navigation() {
 
         <div className="flex items-center space-x-4">
           <Button variant="outline" size="sm">
-            Contact
+            <Link to="/contact">Contact</Link>
           </Button>
           <Button size="sm">Resume</Button>
         </div>

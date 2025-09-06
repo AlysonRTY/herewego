@@ -5,6 +5,7 @@ import AboutMe from "./pages/AboutMe";
 import Navigation from "./components/Navigation";
 import DuckFacts from "./pages/DuckFacts";
 import Skills from "./pages/Skills";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="aboutMe" element={<AboutMe />} />
           <Route path="duckFacts" element={<DuckFacts />} />
           <Route path="skills" element={<Skills />} />
+          <Route path="contact" element={<Contact />} />
         </Routes>
       </BrowserRouter>
     </>

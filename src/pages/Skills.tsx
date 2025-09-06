@@ -54,6 +54,7 @@ export default function Skills() {
                   "Firebase",
                   "SQLite",
                   "PostgreSQL (Prisma)",
+                  "MySQL",
                 ]}
               />
             </div>

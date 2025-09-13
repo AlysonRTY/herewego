@@ -6,6 +6,7 @@ import Navigation from "./components/Navigation";
 import DuckFacts from "./pages/DuckFacts";
 import Skills from "./pages/Skills";
 import Contact from "./pages/Contact";
+import BerlinTime from "./pages/BerlinTime";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="duckFacts" element={<DuckFacts />} />
           <Route path="skills" element={<Skills />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="berlin-time" element={<BerlinTime />} />
         </Routes>
       </BrowserRouter>
     </>

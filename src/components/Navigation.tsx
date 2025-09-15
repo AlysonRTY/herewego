@@ -8,6 +8,7 @@ export default function Navigation() {
     { href: "/duckFacts", label: "Duck Facts" },
     { href: "/skills", label: "Skills" },
     { href: "/contact", label: "Contact" },
+    { href: "/berlin-time", label: "Berlin Time" },
   ];
 
   return (

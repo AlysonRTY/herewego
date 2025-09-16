@@ -78,14 +78,6 @@ export default function DuckFacts() {
             Discover the fascinating world of ducks with these incredible facts
             about these amazing waterfowl!
           </p>
-          <div className="mt-4 flex justify-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-green-300 text-green-700"
-            >
-              Interactive
-            </Badge>
-          </div>
         </div>
 
         <Separator className="my-8" />

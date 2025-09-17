@@ -43,14 +43,6 @@ export default function HeroSection() {
             View My Work
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="px-8 py-3 text-lg border-2"
-          >
-            <Download className="mr-2 h-5 w-5" />
-            Download Resume
-          </Button>
         </div>
 
         {/* Contact info */}

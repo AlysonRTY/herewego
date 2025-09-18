@@ -7,6 +7,7 @@ export default function Navigation() {
     { href: "/aboutMe", label: "About" },
     { href: "/duckFacts", label: "Duck Facts" },
     { href: "/skills", label: "Skills" },
+    { href: "/react-demos", label: "React Demos" },
     { href: "/contact", label: "Contact" },
     { href: "/berlin-time", label: "Berlin Time" },
   ];

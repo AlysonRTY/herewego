@@ -1,4 +1,11 @@
-import { useState, useEffect, useReducer, useMemo, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useReducer,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import {
   Card,
   CardContent,
@@ -69,12 +76,91 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+// Animated counter hook
+function useAnimatedCounter(target: number, duration: number = 1000) {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const start = current;
+    const increment = (target - start) / (duration / 16);
+    let currentValue = start;
+
+    const timer = setInterval(() => {
+      currentValue += increment;
+      if (
+        (increment > 0 && currentValue >= target) ||
+        (increment < 0 && currentValue <= target)
+      ) {
+        setCurrent(target);
+        clearInterval(timer);
+      } else {
+        setCurrent(Math.round(currentValue));
+      }
+    }, 16);
+
+    return () => clearInterval(timer);
+  }, [target, duration]);
+
+  return current;
+}
+
+// Drag and drop hook
+function useDragAndDrop<T>(initialItems: T[]) {
+  const [items, setItems] = useState(initialItems);
+  const [draggedItem, setDraggedItem] = useState<T | null>(null);
+
+  const handleDragStart = (item: T) => {
+    setDraggedItem(item);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (targetItem: T) => {
+    if (!draggedItem) return;
+
+    const draggedIndex = items.indexOf(draggedItem);
+    const targetIndex = items.indexOf(targetItem);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newItems = [...items];
+    newItems.splice(draggedIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+
+    setItems(newItems);
+    setDraggedItem(null);
+  };
+
+  return { items, handleDragStart, handleDragOver, handleDrop, draggedItem };
+}
+
 export default function ReactDemos() {
   // State management demos
   const [count, dispatch] = useReducer(counterReducer, 0);
   const [items, setItems] = useState<string[]>(["React", "TypeScript", "Vite"]);
   const [searchTerm, setSearchTerm] = useState("");
   const [theme, setTheme] = useLocalStorage("demo-theme", "light");
+
+  // New demo states
+  const [targetNumber, setTargetNumber] = useState(100);
+  const animatedCount = useAnimatedCounter(targetNumber);
+  const [selectedColor, setSelectedColor] = useState("#3b82f6");
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [swipeDirection, setSwipeDirection] = useState<string>("");
+
+  // Drag and drop demo
+  const dragItems = ["🎯 Task 1", "🚀 Task 2", "⭐ Task 3", "🎨 Task 4"];
+  const {
+    items: draggableItems,
+    handleDragStart,
+    handleDragOver,
+    handleDrop,
+  } = useDragAndDrop(dragItems);
 
   // Performance demos
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -113,6 +199,43 @@ export default function ReactDemos() {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+
+  // Real-time clock effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Touch gesture handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setSwipeDirection("");
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = touch.clientY - touchStart.y;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (Math.abs(deltaX) > minSwipeDistance) {
+        setSwipeDirection(deltaX > 0 ? "👉 Right" : "👈 Left");
+      }
+    } else {
+      if (Math.abs(deltaY) > minSwipeDistance) {
+        setSwipeDirection(deltaY > 0 ? "👇 Down" : "👆 Up");
+      }
+    }
+
+    setTouchStart(null);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -310,6 +433,204 @@ export default function ReactDemos() {
             </CardContent>
           </Card>
 
+          {/* Drag & Drop Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Drag & Drop
+                <Badge variant="secondary">Interactive</Badge>
+              </CardTitle>
+              <CardDescription>
+                Reorder items with drag and drop
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                {draggableItems.map((item, index) => (
+                  <div
+                    key={index}
+                    draggable
+                    onDragStart={() => handleDragStart(item)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(item)}
+                    className="p-3 bg-muted rounded-md cursor-move hover:bg-muted/80 transition-colors border-2 border-transparent hover:border-primary/20"
+                  >
+                    <span className="text-sm font-medium">{item}</span>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">
+                  Drag items to reorder them!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Animated Counter Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Animated Counter
+                <Badge variant="secondary">Animation</Badge>
+              </CardTitle>
+              <CardDescription>
+                Smooth number transitions with custom hook
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-4 font-mono">
+                  {animatedCount.toLocaleString()}
+                </div>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  <Button
+                    onClick={() => setTargetNumber(100)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    100
+                  </Button>
+                  <Button
+                    onClick={() => setTargetNumber(1000)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    1K
+                  </Button>
+                  <Button
+                    onClick={() => setTargetNumber(10000)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    10K
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      setTargetNumber(Math.floor(Math.random() * 100000))
+                    }
+                    size="sm"
+                  >
+                    Random
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Color Picker Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Live Color Picker
+                <Badge variant="secondary">Interactive</Badge>
+              </CardTitle>
+              <CardDescription>
+                Real-time color preview and manipulation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div
+                  className="w-full h-20 rounded-md border-2 transition-colors duration-200"
+                  style={{ backgroundColor: selectedColor }}
+                />
+                <input
+                  type="color"
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  className="w-full h-10 rounded-md border cursor-pointer"
+                />
+                <div className="text-center">
+                  <code className="text-sm bg-muted px-2 py-1 rounded">
+                    {selectedColor.toUpperCase()}
+                  </code>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {["#ef4444", "#22c55e", "#3b82f6", "#a855f7"].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className="w-full h-8 rounded border-2 hover:scale-105 transition-transform"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Real-time Clock Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                World Clock
+                <Badge variant="secondary">Real-time</Badge>
+              </CardTitle>
+              <CardDescription>
+                Multiple timezone display with live updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                {[
+                  { label: "Local", timezone: undefined },
+                  { label: "UTC", timezone: "UTC" },
+                  { label: "Tokyo", timezone: "Asia/Tokyo" },
+                  { label: "New York", timezone: "America/New_York" },
+                ].map(({ label, timezone }) => (
+                  <div
+                    key={label}
+                    className="flex justify-between items-center p-2 bg-muted rounded"
+                  >
+                    <span className="font-medium text-sm">{label}</span>
+                    <span className="font-mono text-sm">
+                      {currentTime.toLocaleTimeString([], {
+                        timeZone: timezone,
+                        hour12: false,
+                      })}
+                    </span>
+                  </div>
+                ))}
+                <div className="text-center text-xs text-muted-foreground">
+                  Updates every second
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Touch Gesture Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Gesture Detection
+                <Badge variant="secondary">Touch</Badge>
+              </CardTitle>
+              <CardDescription>
+                Swipe detection for touch devices
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div
+                className="w-full h-32 border-2 border-dashed border-muted-foreground rounded-md flex items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div>
+                  {swipeDirection ? (
+                    <div className="text-2xl font-bold">{swipeDirection}</div>
+                  ) : (
+                    <div className="text-muted-foreground">
+                      <div className="text-lg mb-1">👆👇👈👉</div>
+                      <div className="text-sm">Swipe here!</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Works on touch devices and trackpads
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Component Composition Demo */}
           <Card className="h-fit">
             <CardHeader>
@@ -362,6 +683,11 @@ export default function ReactDemos() {
                   "useCallback",
                   "Custom Hooks",
                   "Event Handling",
+                  "Drag & Drop",
+                  "Animations",
+                  "Touch Gestures",
+                  "Real-time Updates",
+                  "Color Manipulation",
                   "Conditional Rendering",
                   "List Rendering",
                   "Component Composition",

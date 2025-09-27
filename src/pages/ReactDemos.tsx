@@ -136,6 +136,76 @@ function useDragAndDrop<T>(initialItems: T[]) {
   return { items, handleDragStart, handleDragOver, handleDrop, draggedItem };
 }
 
+// Focus management hook
+function useFocusTrap() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return;
+
+    const container = containerRef.current;
+    const focusableElements = container.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement?.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement?.focus();
+          }
+        }
+      }
+      if (e.key === "Escape") {
+        setIsActive(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    firstElement?.focus();
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isActive]);
+
+  return { containerRef, isActive, setIsActive };
+}
+
+// Intersection observer hook
+function useIntersectionObserver(threshold = 0.1) {
+  const [isVisible, setIsVisible] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { elementRef, isVisible };
+}
+
 export default function ReactDemos() {
   // State management demos
   const [count, dispatch] = useReducer(counterReducer, 0);
@@ -152,6 +222,23 @@ export default function ReactDemos() {
     null
   );
   const [swipeDirection, setSwipeDirection] = useState<string>("");
+
+  // Additional interactive states
+  const [progress, setProgress] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [notification, setNotification] = useState<string>("");
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  // Focus trap and intersection observer
+  const {
+    containerRef: focusRef,
+    isActive: focusActive,
+    setIsActive: setFocusActive,
+  } = useFocusTrap();
+  const { elementRef: observerRef, isVisible } = useIntersectionObserver();
 
   // Drag and drop demo
   const dragItems = ["🎯 Task 1", "🚀 Task 2", "⭐ Task 3", "🎨 Task 4"];
@@ -208,6 +295,45 @@ export default function ReactDemos() {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Progress bar animation
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setIsPlaying(false);
+          setNotification("Animation completed! 🎉");
+          setTimeout(() => setNotification(""), 3000);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  // Form validation
+  const validateForm = useCallback(() => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      errors.name = "Name is required";
+    } else if (formData.name.length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Email is invalid";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [formData]);
 
   // Touch gesture handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -631,6 +757,226 @@ export default function ReactDemos() {
             </CardContent>
           </Card>
 
+          {/* Progress Bar Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Progress Animation
+                <Badge variant="secondary">Animation</Badge>
+              </CardTitle>
+              <CardDescription>
+                Controlled animations with useEffect
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-100 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold mb-2">{progress}%</div>
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      onClick={() => {
+                        setProgress(0);
+                        setIsPlaying(!isPlaying);
+                      }}
+                      size="sm"
+                      variant={isPlaying ? "destructive" : "default"}
+                    >
+                      {isPlaying ? "Stop" : "Start"}
+                    </Button>
+                    <Button
+                      onClick={() => setProgress(0)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+                {notification && (
+                  <div className="text-center text-sm text-green-600 font-medium animate-pulse">
+                    {notification}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Form Validation Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Form Validation
+                <Badge variant="secondary">Validation</Badge>
+              </CardTitle>
+              <CardDescription>
+                Real-time validation with custom hooks
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    className={`w-full p-2 border rounded-md ${
+                      validationErrors.name
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {validationErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {validationErrors.name}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
+                    className={`w-full p-2 border rounded-md ${
+                      validationErrors.email
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {validationErrors.email && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {validationErrors.email}
+                    </p>
+                  )}
+                </div>
+                <Button onClick={validateForm} className="w-full" size="sm">
+                  Validate Form
+                </Button>
+                {Object.keys(validationErrors).length === 0 &&
+                  formData.name &&
+                  formData.email && (
+                    <p className="text-green-600 text-sm text-center">
+                      ✅ Form is valid!
+                    </p>
+                  )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Focus Management Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Focus Management
+                <Badge variant="secondary">Accessibility</Badge>
+              </CardTitle>
+              <CardDescription>
+                Keyboard navigation and focus trapping
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setFocusActive(true)}
+                  className="w-full"
+                  size="sm"
+                >
+                  Open Focus Trap Modal
+                </Button>
+
+                {focusActive && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div
+                      ref={focusRef}
+                      className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4"
+                    >
+                      <h3 className="text-lg font-semibold mb-4">
+                        Focus Trap Demo
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Try tabbing through these elements. Focus stays trapped!
+                      </p>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="First input"
+                          className="w-full p-2 border rounded"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Second input"
+                          className="w-full p-2 border rounded"
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            Action
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => setFocusActive(false)}
+                          >
+                            Close (or press Esc)
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  Press Tab/Shift+Tab to navigate, Esc to close
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Intersection Observer Demo */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Scroll Detection
+                <Badge variant="secondary">Observer</Badge>
+              </CardTitle>
+              <CardDescription>
+                Intersection Observer API for scroll effects
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div
+                ref={observerRef}
+                className={`w-full h-32 border-2 rounded-md flex items-center justify-center transition-all duration-500 ${
+                  isVisible
+                    ? "border-green-500 bg-green-50 scale-105"
+                    : "border-gray-300 bg-gray-50"
+                }`}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-2">{isVisible ? "👀" : "😴"}</div>
+                  <div className="text-sm font-medium">
+                    {isVisible ? "I can see you!" : "Scroll to see me"}
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                This element detects when it's visible in the viewport
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Component Composition Demo */}
           <Card className="h-fit">
             <CardHeader>
@@ -681,6 +1027,7 @@ export default function ReactDemos() {
                   "useReducer",
                   "useMemo",
                   "useCallback",
+                  "useRef",
                   "Custom Hooks",
                   "Event Handling",
                   "Drag & Drop",
@@ -688,10 +1035,15 @@ export default function ReactDemos() {
                   "Touch Gestures",
                   "Real-time Updates",
                   "Color Manipulation",
+                  "Form Validation",
+                  "Focus Management",
+                  "Intersection Observer",
+                  "Progress Tracking",
                   "Conditional Rendering",
                   "List Rendering",
                   "Component Composition",
                   "Performance Optimization",
+                  "Accessibility Features",
                 ].map((feature) => (
                   <Badge
                     key={feature}

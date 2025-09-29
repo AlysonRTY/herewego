@@ -8,6 +8,7 @@ export default function Navigation() {
     { href: "/duckFacts", label: "Duck Facts" },
     { href: "/skills", label: "Skills" },
     { href: "/react-demos", label: "React Demos" },
+    { href: "/memory-game", label: "Memory Game 🎮" },
     { href: "/contact", label: "Contact" },
     { href: "/berlin-time", label: "Berlin Time" },
   ];

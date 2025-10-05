@@ -9,6 +9,7 @@ import Contact from "./pages/Contact";
 import BerlinTime from "./pages/BerlinTime";
 import ReactDemos from "./pages/ReactDemos";
 import MemoryGame from "./pages/MemoryGame";
+import SnakeGame from "./pages/SnakeGame";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="berlin-time" element={<BerlinTime />} />
           <Route path="react-demos" element={<ReactDemos />} />
           <Route path="memory-game" element={<MemoryGame />} />
+          <Route path="snake-game" element={<SnakeGame />} />
         </Routes>
       </BrowserRouter>
     </>

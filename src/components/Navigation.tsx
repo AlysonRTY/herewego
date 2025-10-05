@@ -9,6 +9,7 @@ export default function Navigation() {
     { href: "/skills", label: "Skills" },
     { href: "/react-demos", label: "React Demos" },
     { href: "/memory-game", label: "Memory Game 🎮" },
+    { href: "/snake-game", label: "Snake Game 🐍" },
     { href: "/contact", label: "Contact" },
     { href: "/berlin-time", label: "Berlin Time" },
   ];

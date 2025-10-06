@@ -10,6 +10,7 @@ import BerlinTime from "./pages/BerlinTime";
 import ReactDemos from "./pages/ReactDemos";
 import MemoryGame from "./pages/MemoryGame";
 import SnakeGame from "./pages/SnakeGame";
+import Playground from "./pages/Playground";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="react-demos" element={<ReactDemos />} />
           <Route path="memory-game" element={<MemoryGame />} />
           <Route path="snake-game" element={<SnakeGame />} />
+          <Route path="playground" element={<Playground />} />
         </Routes>
       </BrowserRouter>
     </>

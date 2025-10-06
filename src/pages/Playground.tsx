@@ -1,0 +1,613 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  life: number;
+}
+
+interface RippleEffect {
+  id: number;
+  x: number;
+  y: number;
+  radius: number;
+  opacity: number;
+}
+
+export default function Playground() {
+  // Interactive States
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const [ripples, setRipples] = useState<RippleEffect[]>([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawingPath, setDrawingPath] = useState<{ x: number; y: number }[]>(
+    []
+  );
+  const [selectedColor, setSelectedColor] = useState("#3b82f6");
+  const [brushSize, setBrushSize] = useState(5);
+
+  // Animation States
+  const [floatingElements, setFloatingElements] = useState<
+    Array<{ id: number; x: number; y: number; rotation: number }>
+  >([]);
+  const [waveOffset, setWaveOffset] = useState(0);
+  const [glowIntensity, setGlowIntensity] = useState(0.5);
+
+  // Interactive Counters
+  const [clickCount, setClickCount] = useState(0);
+  const [hoverCount, setHoverCount] = useState(0);
+  const [keyPresses, setKeyPresses] = useState(0);
+
+  // Canvas and Animation Refs
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+  const particleIdRef = useRef(0);
+  const rippleIdRef = useRef(0);
+
+  // Initialize floating elements
+  useEffect(() => {
+    const elements = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      rotation: Math.random() * 360,
+    }));
+    setFloatingElements(elements);
+  }, []);
+
+  // Mouse tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+
+      // Create particles on mouse move
+      if (Math.random() > 0.8) {
+        createParticle(e.clientX, e.clientY);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Keyboard tracking
+  useEffect(() => {
+    const handleKeyPress = () => {
+      setKeyPresses((prev) => prev + 1);
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, []);
+
+  // Wave animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWaveOffset((prev) => (prev + 0.1) % (Math.PI * 2));
+      setGlowIntensity((prev) => 0.3 + Math.sin(prev * 4) * 0.2);
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Floating elements animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFloatingElements((prev) =>
+        prev.map((el) => ({
+          ...el,
+          x: el.x + Math.sin(Date.now() * 0.001 + el.id) * 0.5,
+          y: el.y + Math.cos(Date.now() * 0.001 + el.id) * 0.3,
+          rotation: el.rotation + 0.5,
+        }))
+      );
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Particle system
+  const createParticle = useCallback((x: number, y: number) => {
+    const particle: Particle = {
+      id: particleIdRef.current++,
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 4,
+      vy: (Math.random() - 0.5) * 4,
+      size: Math.random() * 6 + 2,
+      color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+      life: 1,
+    };
+
+    setParticles((prev) => [...prev.slice(-50), particle]);
+  }, []);
+
+  // Ripple effect
+  const createRipple = useCallback((x: number, y: number) => {
+    const ripple: RippleEffect = {
+      id: rippleIdRef.current++,
+      x,
+      y,
+      radius: 0,
+      opacity: 1,
+    };
+
+    setRipples((prev) => [...prev.slice(-10), ripple]);
+  }, []);
+
+  // Update particles and ripples
+  useEffect(() => {
+    const animate = () => {
+      setParticles((prev) =>
+        prev
+          .map((p) => ({
+            ...p,
+            x: p.x + p.vx,
+            y: p.y + p.vy,
+            life: p.life - 0.02,
+            vy: p.vy + 0.1, // gravity
+          }))
+          .filter((p) => p.life > 0)
+      );
+
+      setRipples((prev) =>
+        prev
+          .map((r) => ({
+            ...r,
+            radius: r.radius + 3,
+            opacity: r.opacity - 0.02,
+          }))
+          .filter((r) => r.opacity > 0)
+      );
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  // Canvas drawing
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setDrawingPath([{ x, y }]);
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setDrawingPath((prev) => [...prev, { x, y }]);
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx && drawingPath.length > 0) {
+      ctx.strokeStyle = selectedColor;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.beginPath();
+      const lastPoint = drawingPath[drawingPath.length - 1];
+      ctx.moveTo(lastPoint.x, lastPoint.y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+  };
+
+  const handleCanvasMouseUp = () => {
+    setIsDrawing(false);
+    setDrawingPath([]);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas!.width, canvas!.height);
+    }
+  };
+
+  // Interactive click handler
+  const handleInteractiveClick = (e: React.MouseEvent) => {
+    setClickCount((prev) => prev + 1);
+    createRipple(e.clientX, e.clientY);
+    createParticle(e.clientX, e.clientY);
+  };
+
+  const colors = [
+    "#ef4444",
+    "#f97316",
+    "#eab308",
+    "#22c55e",
+    "#06b6d4",
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Floating geometric shapes */}
+        {floatingElements.map((el) => (
+          <div
+            key={el.id}
+            className="absolute w-8 h-8 opacity-20"
+            style={{
+              left: `${
+                ((el.x % window.innerWidth) / window.innerWidth) * 100
+              }%`,
+              top: `${
+                ((el.y % window.innerHeight) / window.innerHeight) * 100
+              }%`,
+              transform: `rotate(${el.rotation}deg)`,
+              transition: "all 0.1s ease-out",
+            }}
+          >
+            <div
+              className={`w-full h-full ${
+                el.id % 4 === 0
+                  ? "bg-blue-400 rounded-full"
+                  : el.id % 4 === 1
+                  ? "bg-purple-400 rotate-45"
+                  : el.id % 4 === 2
+                  ? "bg-pink-400 rounded-full"
+                  : "bg-cyan-400"
+              }`}
+            />
+          </div>
+        ))}
+
+        {/* Animated waves */}
+        <div className="absolute bottom-0 left-0 w-full h-32 opacity-30">
+          <svg viewBox="0 0 1200 120" className="w-full h-full">
+            <path
+              d={`M0,60 Q300,${
+                60 + Math.sin(waveOffset) * 20
+              } 600,60 T1200,60 V120 H0 Z`}
+              fill="url(#waveGradient)"
+            />
+            <defs>
+              <linearGradient
+                id="waveGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
+                <stop offset="0%" stopColor="#3b82f6" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Particles */}
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              left: particle.x,
+              top: particle.y,
+              width: particle.size,
+              height: particle.size,
+              backgroundColor: particle.color,
+              opacity: particle.life,
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+        ))}
+
+        {/* Ripples */}
+        {ripples.map((ripple) => (
+          <div
+            key={ripple.id}
+            className="absolute border-2 border-white rounded-full pointer-events-none"
+            style={{
+              left: ripple.x,
+              top: ripple.y,
+              width: ripple.radius * 2,
+              height: ripple.radius * 2,
+              opacity: ripple.opacity,
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+        ))}
+
+        {/* Mouse follower */}
+        <div
+          className="absolute w-6 h-6 bg-white rounded-full pointer-events-none mix-blend-difference transition-all duration-100"
+          style={{
+            left: mousePos.x,
+            top: mousePos.y,
+            transform: "translate(-50%, -50%)",
+            boxShadow: `0 0 ${
+              20 * glowIntensity
+            }px rgba(255, 255, 255, ${glowIntensity})`,
+          }}
+        />
+      </div>
+
+      <div
+        className="container mx-auto px-4 py-8 relative z-10"
+        onClick={handleInteractiveClick}
+      >
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
+            ✨ PLAYGROUND ✨
+          </h1>
+          <div className="h-2 w-32 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full mx-auto mb-6 animate-pulse" />
+          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+            Ein interaktiver Spielplatz voller Animationen, Effekte und cooler
+            Features! Bewege deine Maus, klicke herum und entdecke alle
+            versteckten Interaktionen! 🚀
+          </p>
+        </div>
+
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-3xl mb-2">👆</div>
+              <div className="text-2xl font-bold">{clickCount}</div>
+              <div className="text-sm opacity-80">Clicks</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-3xl mb-2">🖱️</div>
+              <div className="text-2xl font-bold">
+                {Math.round(mousePos.x + mousePos.y)}
+              </div>
+              <div className="text-sm opacity-80">Mouse Distance</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-3xl mb-2">⌨️</div>
+              <div className="text-2xl font-bold">{keyPresses}</div>
+              <div className="text-sm opacity-80">Key Presses</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-3xl mb-2">✨</div>
+              <div className="text-2xl font-bold">{particles.length}</div>
+              <div className="text-sm opacity-80">Active Particles</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Drawing Canvas */}
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">
+                🎨 Digital Canvas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Color Palette */}
+              <div className="flex gap-2 flex-wrap">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                      selectedColor === color
+                        ? "border-white scale-110"
+                        : "border-white/30"
+                    }`}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+
+              {/* Brush Size */}
+              <div className="flex items-center gap-4">
+                <span className="text-white text-sm">Brush Size:</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value={brushSize}
+                  onChange={(e) => setBrushSize(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-white text-sm w-8">{brushSize}px</span>
+              </div>
+
+              {/* Canvas */}
+              <div className="relative">
+                <canvas
+                  ref={canvasRef}
+                  width={400}
+                  height={300}
+                  className="w-full border-2 border-white/30 rounded-lg bg-white/5 cursor-crosshair"
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                />
+              </div>
+
+              <Button
+                onClick={clearCanvas}
+                variant="outline"
+                className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+              >
+                🗑️ Clear Canvas
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Interactive Elements */}
+          <div className="space-y-6">
+            {/* Hover Counter */}
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white text-xl">
+                  🎯 Hover Challenge
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="w-full h-32 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-lg border-2 border-white/30 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-purple-500/50 hover:to-pink-500/50"
+                  onMouseEnter={() => setHoverCount((prev) => prev + 1)}
+                >
+                  <div className="text-center text-white">
+                    <div className="text-3xl mb-2">🎪</div>
+                    <div className="text-lg font-bold">
+                      Hover Count: {hoverCount}
+                    </div>
+                    <div className="text-sm opacity-80">Hover over me!</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Color Morphing Box */}
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white text-xl">
+                  🌈 Color Morpher
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="w-full h-32 rounded-lg border-2 border-white/30 transition-all duration-1000 cursor-pointer"
+                  style={{
+                    background: `linear-gradient(${waveOffset * 50}deg, 
+                      hsl(${(waveOffset * 100) % 360}, 70%, 60%), 
+                      hsl(${(waveOffset * 100 + 120) % 360}, 70%, 60%), 
+                      hsl(${(waveOffset * 100 + 240) % 360}, 70%, 60%))`,
+                  }}
+                  onClick={() => createParticle(mousePos.x, mousePos.y)}
+                >
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                    Click for Particles! ✨
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Particle Explosion Button */}
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white text-xl">
+                  💥 Particle Explosion
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={() => {
+                    for (let i = 0; i < 20; i++) {
+                      setTimeout(() => {
+                        createParticle(
+                          mousePos.x + (Math.random() - 0.5) * 200,
+                          mousePos.y + (Math.random() - 0.5) * 200
+                        );
+                      }, i * 50);
+                    }
+                  }}
+                  className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  🚀 EXPLODE! 💥
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Feature Showcase */}
+        <div className="mt-12">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader className="text-center">
+              <CardTitle className="text-white text-2xl">
+                🎮 Features in diesem Playground
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  {
+                    icon: "🎨",
+                    title: "Interactive Canvas",
+                    desc: "Zeichne mit verschiedenen Farben und Pinselgrößen",
+                  },
+                  {
+                    icon: "✨",
+                    title: "Particle System",
+                    desc: "Dynamische Partikel folgen deiner Maus",
+                  },
+                  {
+                    icon: "🌊",
+                    title: "Animated Waves",
+                    desc: "Flüssige Animationen im Hintergrund",
+                  },
+                  {
+                    icon: "🎯",
+                    title: "Click Tracking",
+                    desc: "Jeder Klick wird gezählt und visualisiert",
+                  },
+                  {
+                    icon: "🌈",
+                    title: "Color Morphing",
+                    desc: "Sich ständig verändernde Farbverläufe",
+                  },
+                  {
+                    icon: "💫",
+                    title: "Ripple Effects",
+                    desc: "Welleneffekte bei jedem Klick",
+                  },
+                ].map((feature, index) => (
+                  <div
+                    key={index}
+                    className="text-center p-4 bg-white/5 rounded-lg border border-white/10"
+                  >
+                    <div className="text-3xl mb-2">{feature.icon}</div>
+                    <h3 className="text-white font-bold mb-1">
+                      {feature.title}
+                    </h3>
+                    <p className="text-white/70 text-sm">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Easter Egg */}
+        <div className="mt-8 text-center">
+          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-4 py-2 text-lg animate-bounce">
+            🎉 Du hast {clickCount + hoverCount + keyPresses} Interaktionen
+            gemacht! 🎉
+          </Badge>
+        </div>
+      </div>
+    </div>
+  );
+}

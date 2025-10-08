@@ -179,36 +179,49 @@ export default function Playground() {
     };
   }, []);
 
-  // Canvas drawing
+  // Canvas drawing with proper coordinate calculation
+  const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  };
+
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setDrawingPath([{ x, y }]);
+    const coords = getCanvasCoordinates(e);
+    setDrawingPath([coords]);
+
+    // Start drawing immediately
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx) {
+      ctx.strokeStyle = selectedColor;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(coords.x, coords.y);
+    }
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    setDrawingPath((prev) => [...prev, { x, y }]);
+    const coords = getCanvasCoordinates(e);
+    setDrawingPath((prev) => [...prev, coords]);
 
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
-    if (ctx && drawingPath.length > 0) {
-      ctx.strokeStyle = selectedColor;
-      ctx.lineWidth = brushSize;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-
-      ctx.beginPath();
-      const lastPoint = drawingPath[drawingPath.length - 1];
-      ctx.moveTo(lastPoint.x, lastPoint.y);
-      ctx.lineTo(x, y);
+    if (ctx) {
+      ctx.lineTo(coords.x, coords.y);
       ctx.stroke();
     }
   };
@@ -216,6 +229,32 @@ export default function Playground() {
   const handleCanvasMouseUp = () => {
     setIsDrawing(false);
     setDrawingPath([]);
+  };
+
+  // Touch support for mobile
+  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent("mousedown", {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+    });
+    handleCanvasMouseDown(mouseEvent as any);
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent("mousemove", {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+    });
+    handleCanvasMouseMove(mouseEvent as any);
+  };
+
+  const handleCanvasTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    handleCanvasMouseUp();
   };
 
   const clearCanvas = () => {
@@ -338,11 +377,10 @@ export default function Playground() {
 
         {/* Mouse follower */}
         <div
-          className="absolute w-6 h-6 bg-white rounded-full pointer-events-none mix-blend-difference transition-all duration-100"
+          className="fixed w-6 h-6 bg-white rounded-full pointer-events-none mix-blend-difference z-50"
           style={{
-            left: mousePos.x,
-            top: mousePos.y,
-            transform: "translate(-50%, -50%)",
+            left: mousePos.x - 12,
+            top: mousePos.y - 12,
             boxShadow: `0 0 ${
               20 * glowIntensity
             }px rgba(255, 255, 255, ${glowIntensity})`,
@@ -444,14 +482,21 @@ export default function Playground() {
               <div className="relative">
                 <canvas
                   ref={canvasRef}
-                  width={400}
-                  height={300}
-                  className="w-full border-2 border-white/30 rounded-lg bg-white/5 cursor-crosshair"
+                  width={600}
+                  height={400}
+                  className="w-full max-w-full border-2 border-white/30 rounded-lg bg-white/5 cursor-crosshair touch-none"
+                  style={{ imageRendering: "auto" }}
                   onMouseDown={handleCanvasMouseDown}
                   onMouseMove={handleCanvasMouseMove}
                   onMouseUp={handleCanvasMouseUp}
                   onMouseLeave={handleCanvasMouseUp}
+                  onTouchStart={handleCanvasTouchStart}
+                  onTouchMove={handleCanvasTouchMove}
+                  onTouchEnd={handleCanvasTouchEnd}
                 />
+                <div className="absolute top-2 left-2 text-white/50 text-xs pointer-events-none">
+                  Click and drag to draw! 🎨
+                </div>
               </div>
 
               <Button

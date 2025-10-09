@@ -268,8 +268,9 @@ export default function Playground() {
   // Interactive click handler
   const handleInteractiveClick = (e: React.MouseEvent) => {
     setClickCount((prev) => prev + 1);
-    createRipple(e.clientX, e.clientY);
-    createParticle(e.clientX, e.clientY);
+    // Use current mouse position instead of event coordinates for better accuracy
+    createRipple(mousePos.x, mousePos.y);
+    createParticle(mousePos.x, mousePos.y);
   };
 
   const colors = [
@@ -346,15 +347,14 @@ export default function Playground() {
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className="absolute rounded-full pointer-events-none"
+            className="fixed rounded-full pointer-events-none z-30"
             style={{
-              left: particle.x,
-              top: particle.y,
+              left: particle.x - particle.size / 2,
+              top: particle.y - particle.size / 2,
               width: particle.size,
               height: particle.size,
               backgroundColor: particle.color,
               opacity: particle.life,
-              transform: "translate(-50%, -50%)",
             }}
           />
         ))}
@@ -363,14 +363,13 @@ export default function Playground() {
         {ripples.map((ripple) => (
           <div
             key={ripple.id}
-            className="absolute border-2 border-white rounded-full pointer-events-none"
+            className="fixed border-2 border-white rounded-full pointer-events-none z-40"
             style={{
-              left: ripple.x,
-              top: ripple.y,
+              left: ripple.x - ripple.radius,
+              top: ripple.y - ripple.radius,
               width: ripple.radius * 2,
               height: ripple.radius * 2,
               opacity: ripple.opacity,
-              transform: "translate(-50%, -50%)",
             }}
           />
         ))}

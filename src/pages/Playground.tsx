@@ -48,7 +48,7 @@ export default function Playground() {
 
   // Canvas and Animation Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
   const particleIdRef = useRef(0);
   const rippleIdRef = useRef(0);
 

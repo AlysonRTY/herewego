@@ -253,7 +253,7 @@ export default function ReactDemos() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const expensiveCalculation = useMemo(() => {
-    console.log("Expensive calculation running...");
+    // Simulating expensive calculation
     return items.filter((item) =>
       item.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
     ).length;

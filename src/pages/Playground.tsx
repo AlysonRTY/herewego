@@ -22,15 +22,32 @@ interface RippleEffect {
   opacity: number;
 }
 
+// Constants for better maintainability
+const PARTICLE_CONFIG = {
+  MAX_PARTICLES: 50,
+  LIFE_DECAY: 0.02,
+  GRAVITY: 0.1,
+  VELOCITY_RANGE: 4,
+  SIZE_RANGE: { min: 2, max: 8 },
+} as const;
+
+const RIPPLE_CONFIG = {
+  MAX_RIPPLES: 10,
+  GROWTH_RATE: 3,
+  OPACITY_DECAY: 0.02,
+} as const;
+
+const CANVAS_CONFIG = {
+  WIDTH: 600,
+  HEIGHT: 400,
+} as const;
+
 export default function Playground() {
   // Interactive States
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [particles, setParticles] = useState<Particle[]>([]);
   const [ripples, setRipples] = useState<RippleEffect[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawingPath, setDrawingPath] = useState<{ x: number; y: number }[]>(
-    []
-  );
   const [selectedColor, setSelectedColor] = useState("#3b82f6");
   const [brushSize, setBrushSize] = useState(5);
 
@@ -54,28 +71,68 @@ export default function Playground() {
 
   // Initialize floating elements
   useEffect(() => {
-    const elements = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      rotation: Math.random() * 360,
-    }));
-    setFloatingElements(elements);
+    const initializeElements = () => {
+      const elements = Array.from({ length: 15 }, (_, i) => ({
+        id: i,
+        x: Math.random() * (window.innerWidth || 1200),
+        y: Math.random() * (window.innerHeight || 800),
+        rotation: Math.random() * 360,
+      }));
+      setFloatingElements(elements);
+    };
+
+    initializeElements();
+
+    // Reinitialize on window resize
+    const handleResize = () => initializeElements();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Mouse tracking
+  // Mouse tracking with throttling
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+    let animationFrameId: number;
 
-      // Create particles on mouse move
-      if (Math.random() > 0.8) {
-        createParticle(e.clientX, e.clientY);
+    const handleMouseMove = (e: MouseEvent) => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
       }
+
+      animationFrameId = requestAnimationFrame(() => {
+        setMousePos({ x: e.clientX, y: e.clientY });
+
+        // Create particles on mouse move (reduced frequency)
+        if (Math.random() > 0.9) {
+          const particle: Particle = {
+            id: particleIdRef.current++,
+            x: e.clientX,
+            y: e.clientY,
+            vx: (Math.random() - 0.5) * PARTICLE_CONFIG.VELOCITY_RANGE,
+            vy: (Math.random() - 0.5) * PARTICLE_CONFIG.VELOCITY_RANGE,
+            size:
+              Math.random() *
+                (PARTICLE_CONFIG.SIZE_RANGE.max -
+                  PARTICLE_CONFIG.SIZE_RANGE.min) +
+              PARTICLE_CONFIG.SIZE_RANGE.min,
+            color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+            life: 1,
+          };
+          setParticles((prev) => [
+            ...prev.slice(-PARTICLE_CONFIG.MAX_PARTICLES),
+            particle,
+          ]);
+        }
+      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, []);
 
   // Keyboard tracking
@@ -88,30 +145,38 @@ export default function Playground() {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
-  // Wave animation
+  // Wave animation with RAF for better performance
   useEffect(() => {
-    const interval = setInterval(() => {
-      setWaveOffset((prev) => (prev + 0.1) % (Math.PI * 2));
-      setGlowIntensity((prev) => 0.3 + Math.sin(prev * 4) * 0.2);
-    }, 50);
+    let animationId: number;
 
-    return () => clearInterval(interval);
+    const animate = () => {
+      setWaveOffset((prev) => (prev + 0.05) % (Math.PI * 2));
+      setGlowIntensity((prev) => 0.3 + Math.sin(Date.now() * 0.004) * 0.2);
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationId);
   }, []);
 
-  // Floating elements animation
+  // Floating elements animation with RAF
   useEffect(() => {
-    const interval = setInterval(() => {
+    let animationId: number;
+
+    const animateElements = () => {
       setFloatingElements((prev) =>
         prev.map((el) => ({
           ...el,
-          x: el.x + Math.sin(Date.now() * 0.001 + el.id) * 0.5,
-          y: el.y + Math.cos(Date.now() * 0.001 + el.id) * 0.3,
-          rotation: el.rotation + 0.5,
+          x: el.x + Math.sin(Date.now() * 0.0005 + el.id) * 0.3,
+          y: el.y + Math.cos(Date.now() * 0.0005 + el.id) * 0.2,
+          rotation: el.rotation + 0.3,
         }))
       );
-    }, 50);
+      animationId = requestAnimationFrame(animateElements);
+    };
 
-    return () => clearInterval(interval);
+    animationId = requestAnimationFrame(animateElements);
+    return () => cancelAnimationFrame(animationId);
   }, []);
 
   // Particle system
@@ -120,14 +185,20 @@ export default function Playground() {
       id: particleIdRef.current++,
       x,
       y,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
-      size: Math.random() * 6 + 2,
+      vx: (Math.random() - 0.5) * PARTICLE_CONFIG.VELOCITY_RANGE,
+      vy: (Math.random() - 0.5) * PARTICLE_CONFIG.VELOCITY_RANGE,
+      size:
+        Math.random() *
+          (PARTICLE_CONFIG.SIZE_RANGE.max - PARTICLE_CONFIG.SIZE_RANGE.min) +
+        PARTICLE_CONFIG.SIZE_RANGE.min,
       color: `hsl(${Math.random() * 360}, 70%, 60%)`,
       life: 1,
     };
 
-    setParticles((prev) => [...prev.slice(-50), particle]);
+    setParticles((prev) => [
+      ...prev.slice(-PARTICLE_CONFIG.MAX_PARTICLES),
+      particle,
+    ]);
   }, []);
 
   // Ripple effect
@@ -140,7 +211,7 @@ export default function Playground() {
       opacity: 1,
     };
 
-    setRipples((prev) => [...prev.slice(-10), ripple]);
+    setRipples((prev) => [...prev.slice(-RIPPLE_CONFIG.MAX_RIPPLES), ripple]);
   }, []);
 
   // Update particles and ripples
@@ -152,8 +223,8 @@ export default function Playground() {
             ...p,
             x: p.x + p.vx,
             y: p.y + p.vy,
-            life: p.life - 0.02,
-            vy: p.vy + 0.1, // gravity
+            life: p.life - PARTICLE_CONFIG.LIFE_DECAY,
+            vy: p.vy + PARTICLE_CONFIG.GRAVITY, // gravity
           }))
           .filter((p) => p.life > 0)
       );
@@ -162,8 +233,8 @@ export default function Playground() {
         prev
           .map((r) => ({
             ...r,
-            radius: r.radius + 3,
-            opacity: r.opacity - 0.02,
+            radius: r.radius + RIPPLE_CONFIG.GROWTH_RATE,
+            opacity: r.opacity - RIPPLE_CONFIG.OPACITY_DECAY,
           }))
           .filter((r) => r.opacity > 0)
       );
@@ -197,7 +268,6 @@ export default function Playground() {
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
     const coords = getCanvasCoordinates(e);
-    setDrawingPath([coords]);
 
     // Start drawing immediately
     const canvas = canvasRef.current;
@@ -216,7 +286,6 @@ export default function Playground() {
     if (!isDrawing) return;
 
     const coords = getCanvasCoordinates(e);
-    setDrawingPath((prev) => [...prev, coords]);
 
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -228,7 +297,6 @@ export default function Playground() {
 
   const handleCanvasMouseUp = () => {
     setIsDrawing(false);
-    setDrawingPath([]);
   };
 
   // Touch support for mobile
@@ -481,8 +549,8 @@ export default function Playground() {
               <div className="relative">
                 <canvas
                   ref={canvasRef}
-                  width={600}
-                  height={400}
+                  width={CANVAS_CONFIG.WIDTH}
+                  height={CANVAS_CONFIG.HEIGHT}
                   className="w-full max-w-full border-2 border-white/30 rounded-lg bg-white/5 cursor-crosshair touch-none"
                   style={{ imageRendering: "auto" }}
                   onMouseDown={handleCanvasMouseDown}

@@ -14,23 +14,21 @@ import Playground from "./pages/Playground";
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
-        <Navigation />
-        <Routes>
-          <Route index element={<Homepage />} />
-          <Route path="aboutMe" element={<AboutMe />} />
-          <Route path="duckFacts" element={<DuckFacts />} />
-          <Route path="skills" element={<Skills />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="berlin-time" element={<BerlinTime />} />
-          <Route path="react-demos" element={<ReactDemos />} />
-          <Route path="memory-game" element={<MemoryGame />} />
-          <Route path="snake-game" element={<SnakeGame />} />
-          <Route path="playground" element={<Playground />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Navigation />
+      <Routes>
+        <Route index element={<Homepage />} />
+        <Route path="aboutMe" element={<AboutMe />} />
+        <Route path="duckFacts" element={<DuckFacts />} />
+        <Route path="skills" element={<Skills />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="berlin-time" element={<BerlinTime />} />
+        <Route path="react-demos" element={<ReactDemos />} />
+        <Route path="memory-game" element={<MemoryGame />} />
+        <Route path="snake-game" element={<SnakeGame />} />
+        <Route path="playground" element={<Playground />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

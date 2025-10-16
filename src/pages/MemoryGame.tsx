@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StatCard from "@/components/StatCard";
+import GradientText from "@/components/GradientText";
 
 interface GameCard {
   id: number;
@@ -261,9 +263,13 @@ export default function MemoryGame() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="text-center mb-12">
           <div className="inline-block">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse">
+            <GradientText
+              className="text-5xl md:text-6xl mb-6"
+              gradient="from-blue-600 via-purple-600 to-pink-600"
+              animate={true}
+            >
               🧠 Memory Match
-            </h1>
+            </GradientText>
             <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full mb-4"></div>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">

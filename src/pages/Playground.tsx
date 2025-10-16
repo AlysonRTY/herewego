@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StatCard from "@/components/StatCard";
+import GameCard from "@/components/GameCard";
+import GradientText from "@/components/GradientText";
+import ColorPalette from "@/components/ColorPalette";
+import FeatureGrid from "@/components/FeatureGrid";
 
 interface Particle {
   id: number;
@@ -352,6 +357,39 @@ export default function Playground() {
     "#ec4899",
   ];
 
+  const playgroundFeatures = [
+    {
+      icon: "🎨",
+      title: "Interactive Canvas",
+      description: "Zeichne mit verschiedenen Farben und Pinselgrößen",
+    },
+    {
+      icon: "✨",
+      title: "Particle System",
+      description: "Dynamische Partikel folgen deiner Maus",
+    },
+    {
+      icon: "🌊",
+      title: "Animated Waves",
+      description: "Flüssige Animationen im Hintergrund",
+    },
+    {
+      icon: "🎯",
+      title: "Click Tracking",
+      description: "Jeder Klick wird gezählt und visualisiert",
+    },
+    {
+      icon: "🌈",
+      title: "Color Morphing",
+      description: "Sich ständig verändernde Farbverläufe",
+    },
+    {
+      icon: "💫",
+      title: "Ripple Effects",
+      description: "Welleneffekte bei jedem Klick",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
       {/* Animated Background */}
@@ -461,9 +499,13 @@ export default function Playground() {
       >
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
+          <GradientText
+            className="text-6xl md:text-8xl mb-6"
+            gradient="from-cyan-400 via-purple-400 to-pink-400"
+            animate={true}
+          >
             ✨ PLAYGROUND ✨
-          </h1>
+          </GradientText>
           <div className="h-2 w-32 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full mx-auto mb-6 animate-pulse" />
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             Ein interaktiver Spielplatz voller Animationen, Effekte und cooler
@@ -474,183 +516,156 @@ export default function Playground() {
 
         {/* Stats Dashboard */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-3xl mb-2">👆</div>
-              <div className="text-2xl font-bold">{clickCount}</div>
-              <div className="text-sm opacity-80">Clicks</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-3xl mb-2">🖱️</div>
-              <div className="text-2xl font-bold">
-                {Math.round(mousePos.x + mousePos.y)}
-              </div>
-              <div className="text-sm opacity-80">Mouse Distance</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-3xl mb-2">⌨️</div>
-              <div className="text-2xl font-bold">{keyPresses}</div>
-              <div className="text-sm opacity-80">Key Presses</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-3xl mb-2">✨</div>
-              <div className="text-2xl font-bold">{particles.length}</div>
-              <div className="text-sm opacity-80">Active Particles</div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon="👆"
+            value={clickCount}
+            label="Clicks"
+            className="bg-white/10 backdrop-blur-md border-white/20 text-white"
+            gradient="from-blue-400 to-cyan-400"
+          />
+          <StatCard
+            icon="🖱️"
+            value={Math.round(mousePos.x + mousePos.y)}
+            label="Mouse Distance"
+            className="bg-white/10 backdrop-blur-md border-white/20 text-white"
+            gradient="from-green-400 to-blue-400"
+          />
+          <StatCard
+            icon="⌨️"
+            value={keyPresses}
+            label="Key Presses"
+            className="bg-white/10 backdrop-blur-md border-white/20 text-white"
+            gradient="from-purple-400 to-pink-400"
+          />
+          <StatCard
+            icon="✨"
+            value={particles.length}
+            label="Active Particles"
+            className="bg-white/10 backdrop-blur-md border-white/20 text-white"
+            gradient="from-yellow-400 to-orange-400"
+          />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Drawing Canvas */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white text-xl">
-                🎨 Digital Canvas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Color Palette */}
-              <div className="flex gap-2 flex-wrap">
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
-                      selectedColor === color
-                        ? "border-white scale-110"
-                        : "border-white/30"
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
+          <GameCard
+            title="🎨 Digital Canvas"
+            className="bg-white/10 backdrop-blur-md border-white/20"
+          >
+            {/* Color Palette */}
+            <ColorPalette
+              colors={colors}
+              selectedColor={selectedColor}
+              onColorSelect={setSelectedColor}
+            />
 
-              {/* Brush Size */}
-              <div className="flex items-center gap-4">
-                <span className="text-white text-sm">Brush Size:</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={brushSize}
-                  onChange={(e) => setBrushSize(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <span className="text-white text-sm w-8">{brushSize}px</span>
-              </div>
+            {/* Brush Size */}
+            <div className="flex items-center gap-4">
+              <span className="text-white text-sm">Brush Size:</span>
+              <input
+                type="range"
+                min="1"
+                max="20"
+                value={brushSize}
+                onChange={(e) => setBrushSize(Number(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-white text-sm w-8">{brushSize}px</span>
+            </div>
 
-              {/* Canvas */}
-              <div className="relative">
-                <canvas
-                  ref={canvasRef}
-                  width={CANVAS_CONFIG.WIDTH}
-                  height={CANVAS_CONFIG.HEIGHT}
-                  className="w-full max-w-full border-2 border-white/30 rounded-lg bg-white/5 cursor-crosshair touch-none"
-                  style={{ imageRendering: "auto" }}
-                  onMouseDown={handleCanvasMouseDown}
-                  onMouseMove={handleCanvasMouseMove}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
-                  onTouchStart={handleCanvasTouchStart}
-                  onTouchMove={handleCanvasTouchMove}
-                  onTouchEnd={handleCanvasTouchEnd}
-                />
-                <div className="absolute top-2 left-2 text-white/50 text-xs pointer-events-none">
-                  Click and drag to draw! 🎨
-                </div>
+            {/* Canvas */}
+            <div className="relative">
+              <canvas
+                ref={canvasRef}
+                width={CANVAS_CONFIG.WIDTH}
+                height={CANVAS_CONFIG.HEIGHT}
+                className="w-full max-w-full border-2 border-white/30 rounded-lg bg-white/5 cursor-crosshair touch-none"
+                style={{ imageRendering: "auto" }}
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseUp}
+                onTouchStart={handleCanvasTouchStart}
+                onTouchMove={handleCanvasTouchMove}
+                onTouchEnd={handleCanvasTouchEnd}
+              />
+              <div className="absolute top-2 left-2 text-white/50 text-xs pointer-events-none">
+                Click and drag to draw! 🎨
               </div>
+            </div>
 
-              <Button
-                onClick={clearCanvas}
-                variant="outline"
-                className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
-              >
-                🗑️ Clear Canvas
-              </Button>
-            </CardContent>
-          </Card>
+            <Button
+              onClick={clearCanvas}
+              variant="outline"
+              className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+            >
+              🗑️ Clear Canvas
+            </Button>
+          </GameCard>
 
           {/* Interactive Elements */}
           <div className="space-y-6">
             {/* Hover Counter */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">
-                  🎯 Hover Challenge
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="w-full h-32 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-lg border-2 border-white/30 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-purple-500/50 hover:to-pink-500/50"
-                  onMouseEnter={() => setHoverCount((prev) => prev + 1)}
-                >
-                  <div className="text-center text-white">
-                    <div className="text-3xl mb-2">🎪</div>
-                    <div className="text-lg font-bold">
-                      Hover Count: {hoverCount}
-                    </div>
-                    <div className="text-sm opacity-80">Hover over me!</div>
+            <GameCard
+              title="🎯 Hover Challenge"
+              className="bg-white/10 backdrop-blur-md border-white/20"
+            >
+              <div
+                className="w-full h-32 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-lg border-2 border-white/30 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-purple-500/50 hover:to-pink-500/50"
+                onMouseEnter={() => setHoverCount((prev) => prev + 1)}
+              >
+                <div className="text-center text-white">
+                  <div className="text-3xl mb-2">🎪</div>
+                  <div className="text-lg font-bold">
+                    Hover Count: {hoverCount}
                   </div>
+                  <div className="text-sm opacity-80">Hover over me!</div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </GameCard>
 
             {/* Color Morphing Box */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">
-                  🌈 Color Morpher
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="w-full h-32 rounded-lg border-2 border-white/30 transition-all duration-1000 cursor-pointer"
-                  style={{
-                    background: `linear-gradient(${waveOffset * 50}deg, 
-                      hsl(${(waveOffset * 100) % 360}, 70%, 60%), 
-                      hsl(${(waveOffset * 100 + 120) % 360}, 70%, 60%), 
-                      hsl(${(waveOffset * 100 + 240) % 360}, 70%, 60%))`,
-                  }}
-                  onClick={() => createParticle(mousePos.x, mousePos.y)}
-                >
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
-                    Click for Particles! ✨
-                  </div>
+            <GameCard
+              title="🌈 Color Morpher"
+              className="bg-white/10 backdrop-blur-md border-white/20"
+            >
+              <div
+                className="w-full h-32 rounded-lg border-2 border-white/30 transition-all duration-1000 cursor-pointer"
+                style={{
+                  background: `linear-gradient(${waveOffset * 50}deg, 
+                    hsl(${(waveOffset * 100) % 360}, 70%, 60%), 
+                    hsl(${(waveOffset * 100 + 120) % 360}, 70%, 60%), 
+                    hsl(${(waveOffset * 100 + 240) % 360}, 70%, 60%))`,
+                }}
+                onClick={() => createParticle(mousePos.x, mousePos.y)}
+              >
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                  Click for Particles! ✨
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </GameCard>
 
             {/* Particle Explosion Button */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">
-                  💥 Particle Explosion
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={() => {
-                    for (let i = 0; i < 20; i++) {
-                      setTimeout(() => {
-                        createParticle(
-                          mousePos.x + (Math.random() - 0.5) * 200,
-                          mousePos.y + (Math.random() - 0.5) * 200
-                        );
-                      }, i * 50);
-                    }
-                  }}
-                  className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  🚀 EXPLODE! 💥
-                </Button>
-              </CardContent>
-            </Card>
+            <GameCard
+              title="💥 Particle Explosion"
+              className="bg-white/10 backdrop-blur-md border-white/20"
+            >
+              <Button
+                onClick={() => {
+                  for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                      createParticle(
+                        mousePos.x + (Math.random() - 0.5) * 200,
+                        mousePos.y + (Math.random() - 0.5) * 200
+                      );
+                    }, i * 50);
+                  }
+                }}
+                className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                🚀 EXPLODE! 💥
+              </Button>
+            </GameCard>
           </div>
         </div>
 
@@ -663,51 +678,7 @@ export default function Playground() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-4">
-                {[
-                  {
-                    icon: "🎨",
-                    title: "Interactive Canvas",
-                    desc: "Zeichne mit verschiedenen Farben und Pinselgrößen",
-                  },
-                  {
-                    icon: "✨",
-                    title: "Particle System",
-                    desc: "Dynamische Partikel folgen deiner Maus",
-                  },
-                  {
-                    icon: "🌊",
-                    title: "Animated Waves",
-                    desc: "Flüssige Animationen im Hintergrund",
-                  },
-                  {
-                    icon: "🎯",
-                    title: "Click Tracking",
-                    desc: "Jeder Klick wird gezählt und visualisiert",
-                  },
-                  {
-                    icon: "🌈",
-                    title: "Color Morphing",
-                    desc: "Sich ständig verändernde Farbverläufe",
-                  },
-                  {
-                    icon: "💫",
-                    title: "Ripple Effects",
-                    desc: "Welleneffekte bei jedem Klick",
-                  },
-                ].map((feature, index) => (
-                  <div
-                    key={index}
-                    className="text-center p-4 bg-white/5 rounded-lg border border-white/10"
-                  >
-                    <div className="text-3xl mb-2">{feature.icon}</div>
-                    <h3 className="text-white font-bold mb-1">
-                      {feature.title}
-                    </h3>
-                    <p className="text-white/70 text-sm">{feature.desc}</p>
-                  </div>
-                ))}
-              </div>
+              <FeatureGrid features={playgroundFeatures} />
             </CardContent>
           </Card>
         </div>

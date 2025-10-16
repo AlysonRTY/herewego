@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StatCard from "@/components/StatCard";
+import GradientText from "@/components/GradientText";
 
 interface Position {
   x: number;
@@ -294,9 +296,12 @@ export default function SnakeGame() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="text-center mb-8">
           <div className="inline-block">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <GradientText
+              className="text-5xl md:text-6xl mb-6"
+              gradient="from-green-600 via-emerald-600 to-teal-600"
+            >
               🐍 Snake Game
-            </h1>
+            </GradientText>
             <div className="h-1 w-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-full mb-4"></div>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -308,53 +313,34 @@ export default function SnakeGame() {
         <div className="max-w-4xl mx-auto">
           {/* Game Stats */}
           <div className="flex justify-center gap-4 flex-wrap mb-6">
-            <Card className="text-center backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-2 border-green-200/50 shadow-xl">
-              <CardContent className="p-4">
-                <div className="text-2xl mb-1">🏆</div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                  {gameState.score}
-                </div>
-                <div className="text-sm text-muted-foreground font-medium">
-                  Score
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-2 border-yellow-200/50 shadow-xl">
-              <CardContent className="p-4">
-                <div className="text-2xl mb-1">👑</div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                  {gameState.highScore}
-                </div>
-                <div className="text-sm text-muted-foreground font-medium">
-                  Best
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-2 border-blue-200/50 shadow-xl">
-              <CardContent className="p-4">
-                <div className="text-2xl mb-1">⚡</div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {gameState.level}
-                </div>
-                <div className="text-sm text-muted-foreground font-medium">
-                  Level
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-2 border-purple-200/50 shadow-xl">
-              <CardContent className="p-4">
-                <div className="text-2xl mb-1">📏</div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  {gameState.snake.length}
-                </div>
-                <div className="text-sm text-muted-foreground font-medium">
-                  Length
-                </div>
-              </CardContent>
-            </Card>
+            <StatCard
+              icon="🏆"
+              value={gameState.score}
+              label="Score"
+              className="border-green-200/50"
+              gradient="from-green-600 to-emerald-600"
+            />
+            <StatCard
+              icon="👑"
+              value={gameState.highScore}
+              label="Best"
+              className="border-yellow-200/50"
+              gradient="from-yellow-600 to-orange-600"
+            />
+            <StatCard
+              icon="⚡"
+              value={gameState.level}
+              label="Level"
+              className="border-blue-200/50"
+              gradient="from-blue-600 to-purple-600"
+            />
+            <StatCard
+              icon="📏"
+              value={gameState.snake.length}
+              label="Length"
+              className="border-purple-200/50"
+              gradient="from-purple-600 to-pink-600"
+            />
           </div>
 
           {/* Game Board */}
